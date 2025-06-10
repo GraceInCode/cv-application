@@ -1,36 +1,58 @@
 import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas-pro';
 import { useState } from 'react'
 import { User, GraduationCap, Briefcase, Edit3, Check, Mail, Phone, Download, Eye, } from 'lucide-react'
 
 
   // CVPreview Modal Component
   const CVPreview = ({ generalInfo, education, experience, onClose }) => {
-    const handleDownload = () => {
-      const doc = new jsPDF()
-  
-      doc.setFontSize(20)
-      doc.text(generalInfo.name || 'Your Name', 105, 20, { align: 'center' })
-  
-      doc.setFontSize(12)
-      doc.text(`${generalInfo.email} | ${generalInfo.phone}`, 105, 30, { align: 'center' })
-  
-      // Education Section
-      doc.setFontSize(16)
-      doc.text('EDUCATION', 20, 50)
-      doc.setFontSize(12)
-      doc.text(`${education.degree || 'Your Degree'}`, 20, 60)
-      doc.text(`${education.school || 'Your School/University'}`, 20, 70)
-  
-      // Experience Section
-      doc.setFontSize(16)
-      doc.text('EXPERIENCE', 20, 90)
-      doc.setFontSize(12)
-      doc.text(`${experience.position || 'Position'}`, 20, 100)
-      doc.text(`${experience.company || 'Company'}`, 20, 110)
-  
-      doc.save(`${generalInfo.name || 'CV'}.pdf`)
+    const handleDownload = async () => {
+      const cvElement = document.querySelector('.cv-preview')
+
+      try {
+        // Convert the CV preview to canvas
+        const canvas = await html2canvas(cvElement, {
+          scale: 2, // Increase scale for better quality
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff', // Set background color to white
+        })
+
+        // Create a new jsPDF instance
+        const imgData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF('p', 'mm', 'a4')
+
+        const pdfWodth = pdf.internal.pageSize.getWidth()
+        const pdfHeight = pdf.internal.pageSize.getHeight()
+        const imgWidth = canvas.width * 0.75 // Adjust width for better fit
+        const imgHeight = canvas.height * 0.75 // Adjust height for better fit
+        const ratio = Math.min(pdfWodth / imgWidth, pdfHeight / imgHeight)
+        const imgX = (pdfWodth - imgWidth * ratio) / 2
+        const imgY = 0;
+
+        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio)
+        pdf.save(`${generalInfo.name || 'CV'}.pdf`)
+      } catch (error) {
+        console.error('Error generating PDF:', error)
+        // Fallback to simple text PDF generation
+        const doc = new jsPDF()
+        doc.setFontSize(16)
+        doc.text('CV Preview', 20, 20)
+        doc.setFontSize(12)
+        doc.text(`Name: ${generalInfo.name || 'Your Name'}`, 20, 30)
+        doc.text(`Email: ${generalInfo.email || 'your.email@example.com'}`, 20, 40)
+        doc.text(`Phone: ${generalInfo.phone || '+1 (555) 123-4567'}`, 20, 50)
+        doc.text('Education:', 20, 70)
+        doc.text(`${education.degree || 'Your Degree'}`, 20, 80)
+        doc.text(`${education.school || 'Your School/University'}`, 20, 90)
+        doc.text('Experience:', 20, 110)
+        doc.text(`${experience.position || 'Position'}`, 20, 120)
+        doc.text(`${experience.company || 'Company'}`, 20, 130)
+        doc.text(`Responsibilities: ${experience.responsibilities || 'Your main responsibilities and achievements will be displayed here.'}`, 20, 140)
+        doc.save(`${generalInfo.name || 'CV'}.pdf`)
+      }
     }
-  
+
     return (
       <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
         <div className='bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto'>
@@ -53,8 +75,9 @@ import { User, GraduationCap, Briefcase, Edit3, Check, Mail, Phone, Download, Ey
               </div>
             </div>
           </div >
-  
-          <div className='p-8 bg-white'>
+
+
+          <div className='cv-preview p-8 bg-white'>
             {/* General Information Section */}
             <div className='mb-8'>
               <div className='text-center mb-6'>
@@ -134,11 +157,10 @@ import { User, GraduationCap, Briefcase, Edit3, Check, Mail, Phone, Download, Ey
     )
   }
 
-
-// GeneralInfo Component
-const GeneralInfo = ({ data, onSubmit, isEditing, onEdit}) => {
-  const [formData, setFormData] = useState({
-    name: data.name || '',
+  // GeneralInfo Component
+  const GeneralInfo = ({ data, onSubmit, isEditing, onEdit}) => {
+    const [formData, setFormData] = useState({
+      name: data.name || '',
     email: data.email || '',
     phone: data.phone || ''
   })
@@ -541,8 +563,7 @@ const CVBuilder = () => {
         )}
       </div>
     </div>
-  )
-    </div>
+  </div>
   )
 }
 
