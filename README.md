@@ -96,3 +96,6 @@ Submit a pull request with a clear description of your changes.
 
 Feel free to open an issue for suggestions or bug reports.
 
+License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
