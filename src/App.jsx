@@ -1,5 +1,139 @@
-import React, { useState } from 'react'
-import { User, GraduationCap, Briefcase, Edit3, Check, Mail, Phone } from 'lucide-react'
+import jsPDF from 'jspdf'
+import { useState } from 'react'
+import { User, GraduationCap, Briefcase, Edit3, Check, Mail, Phone, Download, Eye, } from 'lucide-react'
+
+
+  // CVPreview Modal Component
+  const CVPreview = ({ generalInfo, education, experience, onClose }) => {
+    const handleDownload = () => {
+      const doc = new jsPDF()
+  
+      doc.setFontSize(20)
+      doc.text(generalInfo.name || 'Your Name', 105, 20, { align: 'center' })
+  
+      doc.setFontSize(12)
+      doc.text(`${generalInfo.email} | ${generalInfo.phone}`, 105, 30, { align: 'center' })
+  
+      // Education Section
+      doc.setFontSize(16)
+      doc.text('EDUCATION', 20, 50)
+      doc.setFontSize(12)
+      doc.text(`${education.degree || 'Your Degree'}`, 20, 60)
+      doc.text(`${education.school || 'Your School/University'}`, 20, 70)
+  
+      // Experience Section
+      doc.setFontSize(16)
+      doc.text('EXPERIENCE', 20, 90)
+      doc.setFontSize(12)
+      doc.text(`${experience.position || 'Position'}`, 20, 100)
+      doc.text(`${experience.company || 'Company'}`, 20, 110)
+  
+      doc.save(`${generalInfo.name || 'CV'}.pdf`)
+    }
+  
+    return (
+      <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+        <div className='bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto'>
+          <div className='bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-xl'>
+            <div className='flex justify-between items-center mb-4'>
+              <h2 className='text-2xl font-bold'>CV Preview</h2>
+              <div className='flex space-x-2'>
+                <button
+                  onClick={handleDownload}
+                  className='flex items-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg transition-colors cursor-pointer'
+                >
+                  Downlaod PDF
+                </button>
+                <button
+                  onClick={onClose}
+                  className='bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition-colors cursor-pointer text-white'
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div >
+  
+          <div className='p-8 bg-white'>
+            {/* General Information Section */}
+            <div className='mb-8'>
+              <div className='text-center mb-6'>
+                <h1 className='text-4xl font-bold text-gray-800 mb-2'>
+                  {generalInfo.name || 'Your name'}
+                </h1>
+                <div className='flex justify-center space-x-6 text-gray-600'>
+                  <div className='flex items-center'>
+                    <Mail className='w-5 h-5 mr-2' />
+                    {generalInfo.email || 'your.email@example.com'}
+                  </div>
+                  <div className='flex items-center'>
+                    <Phone className='w-5 h-5 mr-2' />
+                    {generalInfo.phone || '+1 (555) 123-4567'}
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+            {/* Education Section */}
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <GraduationCap className="w-5 h-5 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-blue-600 pb-1">
+                  Education
+                </h2>
+              </div>
+              <div className="ml-9">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    {education.degree || 'Your Degree'}
+                  </h3>
+                  <p className="text-blue-600 font-medium text-lg">
+                    {education.school || 'Your School/University'}
+                  </p>
+                  <p className="text-gray-600">
+                    {education.dates || 'Study Period'}
+                  </p>
+                </div>
+              </div>
+            </div>
+  
+            {/* Experience Section */}
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                  <Briefcase className="w-5 h-5 text-purple-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-purple-600 pb-1">
+                  Professional Experience
+                </h2>
+              </div>
+              <div className="ml-9">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      {experience.position || 'Your Position'}
+                    </h3>
+                    <span className="text-gray-500 bg-gray-200 px-3 py-1 rounded-full text-sm">
+                      {experience.dates || 'Employment Period'}
+                    </span>
+                  </div>
+                  <p className="text-purple-600 font-medium text-lg mb-3">
+                    {experience.company || 'Your Company'}
+                  </p>
+                  <div className="text-gray-700 leading-relaxed">
+                    {experience.responsibilities || 'Your main responsibilities and achievements will be displayed here.'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
 // GeneralInfo Component
 const GeneralInfo = ({ data, onSubmit, isEditing, onEdit}) => {
@@ -318,6 +452,7 @@ const CVBuilder = () => {
   const [generalInfo, setGeneralInfo] = useState({})
   const [education, setEducation] = useState({})
   const [experience, setExperience] = useState({})
+  const [showPreview, setShowPreview] = useState(false)
 
   const [editingSection, setEditingSection] = useState({
     general: true,
@@ -346,15 +481,31 @@ const CVBuilder = () => {
 
   const isComplete = !editingSection.general && !editingSection.education && !editingSection.experience
 
+  const handlePreviewToggle = () => {
+    setShowPreview(!showPreview)
+  }
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-4'>
       <div className='max-w-4xl mx-auto'>
         <div className='text-center mb-8'>
           <h1 className='text-4xl font-bold text-gray-800 mb-2'>Professional CV builder</h1>
           <p className='text-gray-600'>Create your CV effortlessly with interactive builder</p>
+          
           {isComplete && (
             <div className='mt-4 p-3 bg-green-100 border border-green-300 rounded-lg'>
               <p className='text-green-800 font-medium'>🎉 Your CV is complete! You can edit any section by clicking the Edit button.</p>
+            </div>
+          )}
+
+          {isComplete && (
+            <div className='mt-4'>
+              <button
+               onClick={handlePreviewToggle}
+               className='flex items-center mx-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg'
+               >
+                <Eye className='w-5 h-5 mr-2' />
+                Preview & Download CV
+               </button>
             </div>
           )}
         </div>
@@ -380,8 +531,17 @@ const CVBuilder = () => {
             isEditing={editingSection.experience}
             onEdit={() => handleEdit('experience')}
           />
-        </div>
+        {showPreview && (
+          <CVPreview 
+            generalInfo={generalInfo}
+            education={education}
+            experience={experience}
+            onClose={() => setShowPreview(false)}
+          />
+        )}
       </div>
+    </div>
+  )
     </div>
   )
 }
